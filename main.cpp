@@ -3,33 +3,47 @@
 
 using namespace std;
 
-Polinom Q;
-int degree;
+void inputPolinomial(Polinom *P){
 
-Polinom inputPolinomial(){
+	int degree;
 
 	cout << "Masukkan derajat polinom: ";
 	cin >> degree;
-	Polinom P = Polinom(degree);
 
+	P->setDeg(degree);
 	int x;
-	for(int i=0; i<=P.getDeg(); i++){
+	for(int i=0; i<=degree; i++){
 		cout << "Masukkan koefisien x^" << i << ": ";
 		cin >> x;
-		P.setKoef(i,x);
+		P->setKoef(i,x);
 	}
 
-	return P;
 }
 
 int main(){
 
-	Q = inputPolinomial();
+	Polinom P1;
+	Polinom P2;
+	Polinom Product;
+	clock_t ti, tf;
 
-	for(int i=0; i<=Q.getDeg(); i++){
-		cout << "koefisien x^" << i << ": ";
-		cout << Q.getKoef(i) << '\n';
-	}
+	inputPolinomial(&P1);
+	inputPolinomial(&P2);
+
+	ti = clock();
+	Product = P1 * P2;
+	tf = clock();
+  double waktu_eksekusi_bf = (double)(tf-ti)/CLOCKS_PER_SEC;
+
+  ti = clock();
+	Product = fast_mul(P1,P2);
+	tf = clock();
+  double waktu_eksekusi_dnc = (double)(tf-ti)/CLOCKS_PER_SEC;
+
+  cout << waktu_eksekusi_bf;
+
+
+
 
 
 	
