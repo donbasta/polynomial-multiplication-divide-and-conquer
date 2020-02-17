@@ -1,3 +1,6 @@
+#include <bits/stdc++.h>
+
+using namespace std;
 
 
 class Polinom {
@@ -7,100 +10,93 @@ class Polinom {
 
 	//ctor
 	Polinom () {
-
-		size = 0;
-		koef = new int(0);
-
+		this->size = 0;
+		this->koef = new int(0);
 	}
 
 	//ctor custom
 	Polinom (int sz) {
-
-		size = sz;
-		koef = new int(sz);
-
+		this->size = sz;
+		this->koef = new int(sz);
 	}
 
 	//cctor
 	Polinom (const Polinom& P){
-
-		size = P.size;
-		koef = new int(size);
+		this->size = P.size;
+		this->koef = new int(size);
 		for(int i=0; i<=size){
 			this->koef[i] = P.koef[i];
 		}
+	}
 
+	Polinom& operator= (const Polinom& P){
+		//resize this->koef jadi sama kayak P ukurannya
+		this->size = P.size;
+		for(int i=0; i<=this->size; i++){
+			this->koef[i] = P.koef[i];
+		}
+		return *this;
 	}
 
 	Polinom operator+ (const Polinom& P){
-
 		Polinom prod = Polinom (max(this->size, P.size));
-
 		for(int i=0; i<=P.size; i++){
 			prod.koef[i] = (i<=this->size : this->koef[i] : 0) + (i<=P.size : P.koef[i] : 0);
 		}
-
 		return prod;
-
 	}
 
 	Polinom operator- (const Polinom& P){
-
 		Polinom prod = Polinom (max(this->size, P.size));
-
 		for(int i=0; i<=P.size; i++){
 			prod.koef[i] = (i<=this->size : this->koef[i] : 0) - (i<=P.size : P.koef[i] : 0);
 		}
-
 		for(int i=prod.size; i>=0; i--){
 			if(prod.koef[i]==0) {prod.size--;}
 		}
-
 		// (prod.koef resize jadi prod.size)
-
 		return prod;
-
 	}
 
 	// Algoritma perkalian polinom brute force, memiliki kompleksitas O(n^2)
 	Polinom operator* (const Polinom& P){ 
-
 		Polinom prod = Polinom (this->size + P.size);
-
 		for(int i=0; i<=this->size; i++){
 			for(int j=0; j<=P.size; j++){
 				prod.koef[i+j] += this->koef[i] * P.koef[j];
 			}
 		}
-
 		return prod;
-
 	}
 
 	// Mengalikan polinom dengan x^n, memiliki kompleksitas O(n)
 	Polinom operator<< (int n){
-
 		Polinom prod = Polinom (this->size + n);
-
 		for(int i=prod.size; i>=n; i--){
 			prod.koef[i] = this->koef[i-n];
 		}
-
 		return prod;
-
 	}
 
 	// Membagi polinom dengan x^n, pembulatan ke bawah
 	Polinom operator>> (int n){
-
 		Polinom prod = Polinom (max(this->size - n, 0));
-
 		if(prod.size > 0){
 			for(int i=prod.size; i>=0; i--){
 				prod.koef[i] = this->koef[i+n];
 			}
 		}
+		return prod;
+	}
 
+	ostream& operator<< (ostream& output){
+		output << "Derajat polinom adalah: " << this->size;
+		output << '\n';
+		for(int i=0; i<=this->size; i++){
+			output << "Koefisien x^" << i << " adalah: " << this->koef[i];
+			output << '\n';
+		}
+		return output;
 	}
 
 };
