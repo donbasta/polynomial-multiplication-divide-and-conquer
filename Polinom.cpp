@@ -54,6 +54,8 @@ public:
 	void setDeg(int deg){
 		//resize ukuran dynamic arraynya
 		this->deg = deg;
+		this->koef = new int[deg+1];
+		this->koef = (int*) realloc (this->koef, (deg+1) * sizeof(int));
 	}
 
 	Polinom& operator= (const Polinom& P){
@@ -159,16 +161,16 @@ inline Polinom fast_mul(Polinom P, Polinom Q){
 		return R;
 	}
 
-	Polinom P1 = P >> (n/2);
-	Polinom P0 = P - (P1 << (n/2)); //perlu diganti lagi ukuran P0 nya
-	Polinom Q1 = Q >> (n/2);
-	Polinom Q0 = Q - (Q1 << (n/2));
+	Polinom P1 = P >> ((n+1)/2);
+	Polinom P0 = P - (P1 << ((n+1)/2)); //perlu diganti lagi ukuran P0 nya
+	Polinom Q1 = Q >> ((n+1)/2);
+	Polinom Q0 = Q - (Q1 << ((n+1)/2));
 
 	// Hanya ada tiga kali pemanggilan fungsi rekursif
 	Polinom R0 = fast_mul(P0,Q0);
 	Polinom R1 = fast_mul(P1,Q1);
 	Polinom R2 = fast_mul(P0+P1,Q0+Q1);
 
-	return R0 + (R2 << (n/2)) + (R1 << n) - (R0 << (n/2)) - (R1 << (n/2));
+	return R0 + (R2 << ((n+1)/2)) + (R1 << n) - (R0 << ((n+1)/2)) - (R1 << ((n+1)/2));
 
 }

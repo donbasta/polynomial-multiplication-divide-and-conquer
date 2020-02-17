@@ -3,6 +3,8 @@
 
 using namespace std;
 
+const int MAX = 20;
+
 void inputPolinomial(Polinom *P){
 
 	int degree;
@@ -12,9 +14,11 @@ void inputPolinomial(Polinom *P){
 
 	P->setDeg(degree);
 	int x;
+
+	srand(time(NULL));
 	for(int i=0; i<=degree; i++){
-		cout << "Masukkan koefisien x^" << i << ": ";
-		cin >> x;
+		// cout << "Masukkan koefisien x^" << i << ": ";
+		x = rand()%(MAX);
 		P->setKoef(i,x);
 	}
 
@@ -40,7 +44,8 @@ int main(){
 	tf = clock();
   double waktu_eksekusi_dnc = (double)(tf-ti)/CLOCKS_PER_SEC;
 
-  cout << waktu_eksekusi_bf;
+  cout << fixed << setprecision(10) << waktu_eksekusi_bf << '\n';
+  cout << fixed << setprecision(10) << waktu_eksekusi_dnc << '\n';
 
 
 
