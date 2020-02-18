@@ -7,26 +7,25 @@ class Polinom {
 
 private:
 	int deg;
-	int* koef;
+	vector<int> koef;
 
 
 public:
 	//ctor
 	Polinom () {
 		this->deg = 0;
-		this->koef = new int[1]();
 	}
 
 	//ctor custom
 	Polinom (int deg) {
 		this->deg = deg;
-		this->koef = new int[deg+1]();
+		this->koef.resize(deg+1);
 	}
 
 	//cctor
 	Polinom (const Polinom& P){
 		this->deg = P.deg;
-		this->koef = new int[deg+1]();
+		this->koef.resize(deg+1);
 		for(int i=0; i<=this->deg; i++){
 			this->koef[i] = P.koef[i];
 		}
@@ -34,15 +33,18 @@ public:
 
 	//dtor
 	~Polinom () {
-		delete this->koef;
 	}
 
 	//getter
-	int getDeg() {
+	int getDeg() const {
 		return this->deg;
 	}
 
-	int getKoef(int idx){
+	// int getKoef(int idx){
+	// 	return this->koef[idx];
+	// }
+
+	int operator[](int idx) const {
 		return this->koef[idx];
 	}
 
@@ -54,12 +56,12 @@ public:
 	void setDeg(int deg){
 		//resize ukuran dynamic arraynya
 		this->deg = deg;
-		this->koef = new int[deg+1]();
+		this->koef.resize(deg+1);
 		// this->koef = (int*) realloc (this->koef, (deg+1) * sizeof(int));
 	}
 
 	Polinom& operator= (const Polinom& P){
-		//resize this->koef jadi sama kayak P ukurannya
+		this->koef.resize(P.deg+1);
 		this->deg = P.deg;
 		for(int i=0; i<=this->deg; i++){
 			this->koef[i] = P.koef[i];
@@ -69,26 +71,32 @@ public:
 
 	Polinom operator+ (const Polinom& P){
 		Polinom prod = Polinom (max(this->deg, P.deg));
+		for(int i=0; i<=min(this->deg, P.deg); i++){
+			prod.koef[i] = this->koef[i] + P.koef[i];
+		}
 		for(int i=0; i<=prod.deg; i++){
 			prod.koef[i] = (i<=this->deg ? this->koef[i] : 0) + (i<=P.deg ? P.koef[i] : 0);
 		}
-		for(int i=prod.deg; i>=0; i--){
-			if(prod.koef[i]==0) {prod.deg--;}
-			if(prod.koef[i]!=0) {break;}
-		}
+		// for(int i=prod.deg; i>=0; i--){
+		// 	if(prod.koef[i]==0) {prod.deg--;}
+		// 	if(prod.koef[i]!=0) {break;}
+		// }
 		// (prod.koef resize jadi prod.size)
 		return prod;
 	}
 
 	Polinom operator- (const Polinom& P){
 		Polinom prod = Polinom (max(this->deg, P.deg));
-		for(int i=0; i<=P.deg; i++){
+		for(int i=0; i<=min(this->deg, P.deg); i++){
+			prod.koef[i] = this->koef[i] - P.koef[i];
+		}
+		for(int i=0; i<=prod.deg; i++){
 			prod.koef[i] = (i<=this->deg ? this->koef[i] : 0) - (i<=P.deg ? P.koef[i] : 0);
 		}
-		for(int i=prod.deg; i>=0; i--){
-			if(prod.koef[i]==0) {prod.deg--;}
-			if(prod.koef[i]!=0) {break;}
-		}
+		// for(int i=prod.deg; i>=0; i--){
+		// 	if(prod.koef[i]==0) {prod.deg--;}
+		// 	if(prod.koef[i]!=0) {break;}
+		// }
 		// (prod.koef resize jadi prod.size)
 		return prod;
 	}
@@ -129,23 +137,31 @@ public:
 		return prod;
 	}
 
-	friend ostream& operator<< (ostream& output, Polinom P){
+	Polinom slice (int deg_1, int deg_2) const {
+		Polinom res = Polinom(deg_2 - deg_1);
+		auto first = this->koef.begin()+deg_1;
+		auto last = this->koef.begin()+deg_2+1;
+		copy(first, last, res.koef.begin());
+		return res;
+	}
+
+	friend ostream& operator<< (ostream& out, Polinom P){
 		bool first = false;
-		output << "Derajat polinom adalah: " << P.getDeg() << '\n';
-		output << "Polinomnya adalah: ";
+		out << "Derajat polinom adalah: " << P.getDeg() << '\n';
+		out << "Polinomnya adalah: ";
 		for(int i=0; i<=P.getDeg(); i++){
-			if(P.getKoef(i)!=0){
-				if(P.getKoef(i) > 0){ //handle juga pas koefisiennya 1
-					if(!first) output << P.getKoef(i) << "x^" << i << " ";
-					else output << "+ " << P.getKoef(i) << "x^" << i << " ";
+			if(P[i]!=0){
+				if(P[i] > 0){ //handle juga pas koefisiennya 1
+					if(!first) out << P[i] << "x^" << i << " ";
+					else out << "+ " << P[i] << "x^" << i << " ";
 				} else {
-					output << "- " << -P.getKoef(i) << "x^" << i << " ";
+					out << "- " << -P[i] << "x^" << i << " ";
 				}
 				first = true;
 			}
 		}
-		output << "\n";
-		return output;
+		out << "\n";
+		return out;
 	}
 
 };
@@ -157,20 +173,22 @@ inline Polinom fast_mul(const Polinom& P, const Polinom& Q){
 
 	if(n==0){
 		Polinom R = Polinom(0);
-		R.setKoef(0, P.getKoef(0) * Q.getKoef(0));
+		R.setKoef(0, P[0]*Q[0]);
 		return R;
 	}
 
-	Polinom P1 = P >> ((n+1)/2);
-	Polinom P0 = P - (P1 << ((n+1)/2)); //perlu diganti lagi ukuran P0 nya
-	Polinom Q1 = Q >> ((n+1)/2);
-	Polinom Q0 = Q - (Q1 << ((n+1)/2));
+	Polinom P1(P.slice((n+1)/2, n));
+	Polinom P0(P.slice(0,(n+1)/2-1));
+	Polinom Q1(Q.slice((n+1)/2, n));
+	Polinom Q0(Q.slice(0,(n+1)/2-1));
+
+	// cout << P0 << P1 << Q0 << Q1;
 
 	// Hanya ada tiga kali pemanggilan fungsi rekursif
-	Polinom R0 = fast_mul(P0,Q0);
-	Polinom R1 = fast_mul(P1,Q1);
-	Polinom R2 = fast_mul(P0+P1,Q0+Q1);
+	Polinom R0(fast_mul(P0,Q0));
+	Polinom R1(fast_mul(P1,Q1));
+	Polinom R2(fast_mul(P0+P1,Q0+Q1));
 
-	return (R0 + ((R2 - R0 - R1) << ((n+1)/2)) + (R1 << n));
+	return (R0 + ((R2-R0-R1) << ((n+1)/2)) + (R1 << 2*((n+1)/2)));
 
 }

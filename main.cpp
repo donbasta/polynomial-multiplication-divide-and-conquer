@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#include "Polinom.cpp"
+#include "Polinom2.cpp"
 
 using namespace std;
 
@@ -11,7 +11,7 @@ void inputPolinomial(Polinom *P){
 
 	cout << "Masukkan derajat polinom: ";
 	cin >> degree;
-
+					
 	P->setDeg(degree);
 	int x;
 
@@ -28,21 +28,29 @@ int main(){
 
 	Polinom P1;
 	Polinom P2;
-	Polinom Product;
+	Polinom Product1;
+	Polinom Product2;
 	clock_t ti, tf;
 
 	inputPolinomial(&P1);
 	inputPolinomial(&P2);
 
+	// cout << P1;
+	// cout << P2;
+
 	ti = clock();
-	Product = P1 * P2;
+	Product1 = P1 * P2;
 	tf = clock();
   double waktu_eksekusi_bf = (double)(tf-ti)/CLOCKS_PER_SEC;
 
+  // cout << Product1;
+
   ti = clock();
-	Product = fast_mul(P1,P2);
+	Product2 = fast_mul(P1,P2);
 	tf = clock();
   double waktu_eksekusi_dnc = (double)(tf-ti)/CLOCKS_PER_SEC;
+
+  // cout << Product2;
 
   cout << fixed << setprecision(10) << waktu_eksekusi_bf << '\n';
   cout << fixed << setprecision(10) << waktu_eksekusi_dnc << '\n';
