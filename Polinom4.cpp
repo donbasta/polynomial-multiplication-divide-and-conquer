@@ -3,26 +3,14 @@
 using namespace std;
 
 //Polinomial nol memiliki derajat -1
-class Polinom {
+struct Polinom {
 
-private:
 	int deg;
 	vector<int> koef;
 
-
-public:
 	//ctor
-	Polinom () {
-		this->deg = 0;
-	}
-
-	//ctor custom
-	Polinom (int deg) {
-		this->deg = deg;
-		this->koef.resize(deg+1);
-	}
-
-	//cctor
+	Polinom () {this->deg = 0;}
+	Polinom (int deg) {this->deg = deg; this->koef.resize(deg+1);}
 	Polinom (const Polinom& P){
 		this->deg = P.deg;
 		this->koef.resize(deg+1);
@@ -31,28 +19,11 @@ public:
 		}
 	}
 
-	//dtor
-	~Polinom () {
-	}
-
-	//getter
-	int getDeg() const {
-		return this->deg;
-	}
-
-	int operator[](int idx) const {
-		return this->koef[idx];
-	}
+	int operator[](int idx) const {return this->koef[idx];}
 
 	//setter
-	void setKoef(int idx, int val){
-		this->koef[idx] = val;
-	}
-
-	void setDeg(int deg){
-		this->deg = deg;
-		this->koef.resize(deg+1);
-	}
+	void setKoef(int idx, int val){this->koef[idx] = val;}
+	void setDeg(int deg){this->deg = deg; this->koef.resize(deg+1);}
 
 	Polinom& operator= (const Polinom& P){
 		this->koef.resize(P.deg+1);
@@ -85,18 +56,6 @@ public:
 		return prod;
 	}
 
-	// Algoritma perkalian polinom brute force, memiliki kompleksitas O(n^2)
-	Polinom operator* (const Polinom& P){ 
-		if(P.deg < 0) {return P;}
-		Polinom prod = Polinom (this->deg + P.deg);
-		for(int i=0; i<=this->deg; i++){
-			for(int j=0; j<=P.deg; j++){
-				prod.koef[i+j] += this->koef[i] * P.koef[j];
-			}
-		}
-		return prod;
-	}
-
 	// // Mengalikan polinom dengan x^n, memiliki kompleksitas O(n)
 	Polinom operator<< (int n){
 		if(this->deg < 0) {return *this;}
@@ -121,23 +80,11 @@ public:
 		return prod;
 	}
 
-	Polinom slice (int deg_1, int deg_2) const {
-		Polinom res = Polinom(deg_2 - deg_1);
-		auto first = this->koef.begin()+deg_1;
-		auto last = this->koef.begin()+deg_2+1;
-		copy(first, last, res.koef.begin());
-		return res;
-	}
-
-	// Polinom operator% (const Polinom& P){
-		
-	// }
-
 	friend ostream& operator<< (ostream& out, Polinom P){
 		bool first = false;
-		out << "Derajat polinom adalah: " << P.getDeg() << '\n';
+		out << "Derajat polinom adalah: " << P.deg << '\n';
 		out << "Polinomnya adalah: ";
-		for(int i=0; i<=P.getDeg(); i++){
+		for(int i=0; i<=P.deg; i++){
 			if(P[i]!=0){
 				if(P[i] > 0){ //handle juga pas koefisiennya 1
 					if(!first) out << P[i] << "x^" << i << " ";
@@ -151,32 +98,70 @@ public:
 		out << "\n";
 		return out;
 	}
-
 };
 
-// Prekondisi : derajat P dan derajat Q sama besar
-inline Polinom fast_mul(const Polinom& P, const Polinom& Q){
 
-	int n = P.getDeg();
+
+inline Polinom bf_mul(const Polinom& P, const Polinom& Q, int *add, int *mul){ 
+
+	*add = 0;
+	*mul = 0;
+	
+	Polinom prod = Polinom (Q.deg + P.deg);
+	for(int i=0; i<=Q.deg; i++){
+		for(int j=0; j<=P.deg; j++){
+			prod.koef[i+j] += Q.koef[i] * P.koef[j];
+			(*mul)++;
+			(*add)++;
+		}
+	}
+
+	return prod;
+
+}
+
+inline Polinom dnc_mul (const Polinom& P, const Polinom& Q, int *add, int *mul){
+
+	int n = P.deg;
+	int a1,a2,a3;
+	int m1,m2,m3;
+	*add = 0;
+	*mul = 0;
 
 	if(n==0){
 		Polinom R = Polinom(0);
-		R.setKoef(0, P[0]*Q[0]);
+		R.setKoef(0, (Q[0])*P[0]);
 		return R;
 	}
 
-	Polinom P1(P.slice((n+1)/2, n));
-	Polinom P0(P.slice(0,(n+1)/2-1));
-	Polinom Q1(Q.slice((n+1)/2, n));
-	Polinom Q0(Q.slice(0,(n+1)/2-1));
+	Polinom P1(n-(n+1)/2);
+	for(int i=0; i<=P1.deg; i++){
+		P1.setKoef(i,P[i+(n+1)/2]);
+	}
 
-	// cout << P0 << P1 << Q0 << Q1;
+	Polinom P0((n+1)/2-1);
+	for(int i=0; i<=P0.deg; i++){
+		P0.setKoef(i,P[i]);
+	}
 
-	// Hanya ada tiga kali pemanggilan fungsi rekursif
-	Polinom R0(fast_mul(P0,Q0));
-	Polinom R1(fast_mul(P1,Q1));
-	Polinom R2(fast_mul(P0+P1,Q0+Q1));
+	Polinom Q1(n-(n+1)/2);
+	for(int i=0; i<=Q1.deg; i++){
+		Q1.setKoef(i,Q[i+(n+1)/2]);
+	}
 
-	return (R0 + ((R2-R0-R1) << ((n+1)/2)) + (R1 << 2*((n+1)/2)));
+	Polinom Q0((n+1)/2-1);
+	for(int i=0; i<=Q0.deg; i++){
+		Q0.setKoef(i,Q[i]);
+	}
 
+	Polinom R0(dnc_mul(P0,Q0,&a1,&m1));
+	Polinom R1(dnc_mul(P1,Q1,&a2,&m2));
+	Polinom R2(dnc_mul((P0+P1),(Q0+Q1),&a3,&m3));
+
+	*add += (a1+a2+a3);
+	*mul += (m1+m2+m3);
+	*add += 4;
+	*mul += 5;
+
+	return R0 + ((R2-R0-R1) << ((n+1)/2)) + (R1 << 2*((n+1)/2));
 }

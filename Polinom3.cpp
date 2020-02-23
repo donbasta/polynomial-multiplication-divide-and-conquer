@@ -121,17 +121,43 @@ public:
 		return prod;
 	}
 
-	Polinom slice (int deg_1, int deg_2) const {
-		Polinom res = Polinom(deg_2 - deg_1);
-		auto first = this->koef.begin()+deg_1;
-		auto last = this->koef.begin()+deg_2+1;
-		copy(first, last, res.koef.begin());
-		return res;
-	}
+	Polinom operator% (const Polinom& P){
 
-	// Polinom operator% (const Polinom& P){
-		
-	// }
+		int n = this->deg;
+
+		if(n==0){
+			Polinom R = Polinom(0);
+			R.setKoef(0, (this->koef[0])*P[0]);
+			return R;
+		}
+
+		Polinom P1(n-(n+1)/2);
+		for(int i=0; i<=P1.deg; i++){
+			P1.setKoef(i,P[i+(n+1)/2]);
+		}
+
+		Polinom P0((n+1)/2-1);
+		for(int i=0; i<=P0.deg; i++){
+			P0.setKoef(i,P[i]);
+		}
+
+		Polinom Q1(n-(n+1)/2);
+		for(int i=0; i<=Q1.deg; i++){
+			Q1.setKoef(i,this->koef[i+(n+1)/2]);
+		}
+
+		Polinom Q0((n+1)/2-1);
+		for(int i=0; i<=Q0.deg; i++){
+			Q0.setKoef(i,this->koef[i]);
+		}
+
+		// Hanya ada tiga kali pemanggilan fungsi rekursif
+		Polinom R0(P0 % Q0);
+		Polinom R1(P1 % Q1);
+		Polinom R2((P0+P1) % (Q0+Q1));
+
+		return R0 + ((R2-R0-R1) << ((n+1)/2)) + (R1 << 2*((n+1)/2));
+	}
 
 	friend ostream& operator<< (ostream& out, Polinom P){
 		bool first = false;
@@ -153,30 +179,3 @@ public:
 	}
 
 };
-
-// Prekondisi : derajat P dan derajat Q sama besar
-inline Polinom fast_mul(const Polinom& P, const Polinom& Q){
-
-	int n = P.getDeg();
-
-	if(n==0){
-		Polinom R = Polinom(0);
-		R.setKoef(0, P[0]*Q[0]);
-		return R;
-	}
-
-	Polinom P1(P.slice((n+1)/2, n));
-	Polinom P0(P.slice(0,(n+1)/2-1));
-	Polinom Q1(Q.slice((n+1)/2, n));
-	Polinom Q0(Q.slice(0,(n+1)/2-1));
-
-	// cout << P0 << P1 << Q0 << Q1;
-
-	// Hanya ada tiga kali pemanggilan fungsi rekursif
-	Polinom R0(fast_mul(P0,Q0));
-	Polinom R1(fast_mul(P1,Q1));
-	Polinom R2(fast_mul(P0+P1,Q0+Q1));
-
-	return (R0 + ((R2-R0-R1) << ((n+1)/2)) + (R1 << 2*((n+1)/2)));
-
-}

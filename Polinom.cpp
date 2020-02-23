@@ -9,7 +9,6 @@ private:
 	int deg;
 	int* koef;
 
-
 public:
 	//ctor
 	Polinom () {
@@ -42,7 +41,7 @@ public:
 		return this->deg;
 	}
 
-	int getKoef(int idx){
+	int operator[](int idx) const {
 		return this->koef[idx];
 	}
 
