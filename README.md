@@ -1,5 +1,4 @@
 # polynomial-multiplication-divide-and-conquer
-Tucil Strategi Algoritma 2
 
 This project is written in C++.
 
